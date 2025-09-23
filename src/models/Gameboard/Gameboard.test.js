@@ -1,6 +1,4 @@
-import Cell from '../Cell/Cell';
-import Ship from '../Ship/Ship';
-import Gameboard from './Gameboard';
+import Gameboard from './Gameboard.js';
 
 describe('Gameboard', () => {
   let gameboard = new Gameboard();
@@ -120,7 +118,7 @@ describe('Gameboard', () => {
 
     it('areAllShipsSunk() should return true if all ships are sunk', () => {
       gameboard.sinkAllShips();
-      expect(gameboard.areAllShipsSunk()).toBe(true);
+      expect(gameboard.allShipsSunk()).toBe(true);
     });
   });
 });

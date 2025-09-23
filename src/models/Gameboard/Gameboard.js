@@ -181,7 +181,7 @@ export default class Gameboard {
     return counter;
   }
 
-  areAllShipsSunk() {
+  allShipsSunk() {
     return this.shipsAlive() === 0 ? true : false;
   }
 
@@ -192,6 +192,10 @@ export default class Gameboard {
 
   sinkAllShips() {
     this.ships.forEach((ship, shipIndex) => this.sinkShip(shipIndex));
+  }
+
+  allCellsStatus() {
+    return this.board.map((cell) => cell.status);
   }
 
   printBoard() {
