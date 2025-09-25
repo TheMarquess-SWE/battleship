@@ -1,9 +1,11 @@
 import Gameboard from '../Gameboard/Gameboard.js';
 
 export default class Player {
-  constructor(name) {
+  constructor(name, gameboardSize = 10, numberOfShips = 5, salvoMode = false) {
     this.name = name;
-    this.gameboard = new Gameboard();
+    this.gameboard = new Gameboard(gameboardSize, numberOfShips);
+    this.normalMode = !salvoMode;
+    this.salvoMode = salvoMode;
   }
 
   placeShips(positionsSet) {
@@ -26,6 +28,14 @@ export default class Player {
     });
   }
 
+  isValidAttack(position) {
+    return this.gameboard.isValidAttack(position);
+  }
+
+  getAttacksLeft() {
+    return this.salvoMode ? this.shipsAlive() : 1;
+  }
+
   shipsAlive() {
     return this.gameboard.shipsAlive();
   }
@@ -36,9 +46,5 @@ export default class Player {
 
   gameboardStatus() {
     return this.gameboard.allCellsStatus();
-  }
-
-  shipsPositions() {
-    return this.gameboard.ships.positions;
   }
 }

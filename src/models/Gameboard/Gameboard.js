@@ -151,11 +151,11 @@ export default class Gameboard {
   }
 
   receiveAttack(cellIndex) {
-    if (cellIndex < 0 || cellIndex >= this.size) return false;
+    if (!this.isValidAttack(cellIndex)) return false;
+
     const cell = this.board[cellIndex];
     const { status, shipIndex, shipSection, isOccupied } = cell;
 
-    if (status !== 0) return false;
     if (isOccupied) {
       const ship = this.ships[shipIndex];
       ship.hit(shipSection);
@@ -164,6 +164,13 @@ export default class Gameboard {
       return true;
     }
     cell.status = 1;
+    return true;
+  }
+
+  isValidAttack(cellIndex) {
+    if (cellIndex < 0 || cellIndex >= this.size) return false;
+    const cell = this.board[cellIndex];
+    if (cell.status !== 0) return false;
     return true;
   }
 
