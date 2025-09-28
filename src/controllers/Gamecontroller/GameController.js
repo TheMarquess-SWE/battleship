@@ -5,13 +5,13 @@ export default class GameController {
     const {
       gameboardSize,
       numberOfShips,
-      multiplayer,
-      salvoMode,
+      mode,
+      difficulty,
       playerOneName,
       playerTwoName,
     } = gameSetup;
 
-    this.salvoMode = salvoMode;
+    this.salvoMode = difficulty === 'salvo';
     this.players = [
       new Player(playerOneName, gameboardSize, numberOfShips, this.salvoMode),
       new Player(playerTwoName, gameboardSize, numberOfShips, this.salvoMode),

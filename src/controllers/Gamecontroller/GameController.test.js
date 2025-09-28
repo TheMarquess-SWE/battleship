@@ -9,8 +9,8 @@ describe('GameController', () => {
     const gameController = new GameController({
       gameboardSize: 10,
       numberOfShips: 5,
-      multiplayer: true,
-      salvoMode: false,
+      mode: 'versus',
+      difficulty: 'salvo',
       playerOneName: 'PLAYER ONE',
       playerTwoName: 'PLAYER TWO',
     });
@@ -33,8 +33,8 @@ describe('GameController', () => {
       gameController = new GameController({
         gameboardSize: 10,
         numberOfShips: 5,
-        multiplayer: true,
-        salvoMode: false,
+        mode: 'versus',
+        difficulty: 'normal',
         playerOneName: 'JUDO MASTER',
         playerTwoName: 'ALBEDO',
       });
@@ -56,8 +56,8 @@ describe('GameController', () => {
         gameController = new GameController({
           gameboardSize: 10,
           numberOfShips: 5,
-          multiplayer: true,
-          salvoMode: false,
+          mode: 'versus',
+          difficulty: 'salvo',
           playerOneName: 'JUDO MASTER',
           playerTwoName: 'ALBEDO',
         });
@@ -107,8 +107,8 @@ describe('GameController', () => {
       gameController = new GameController({
         gameboardSize: 10,
         numberOfShips: 5,
-        multiplayer: true,
-        salvoMode: true,
+        mode: 'versus',
+        difficulty: 'salvo',
         playerOneName: 'JUDO MASTER',
         playerTwoName: 'ALBEDO',
       });
