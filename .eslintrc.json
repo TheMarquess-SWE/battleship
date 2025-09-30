@@ -10,9 +10,18 @@
     "plugin:prettier/recommended",
     "plugin:jest/recommended"
   ],
-  "plugins": ["prettier", "jest"],
+  "plugins": ["prettier", "jest", "import"],
   "rules": {
     "prettier/prettier": "warn",
-    "no-console": "off"
+    "no-console": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "always", // ✅ require ".js"
+        "mjs": "always",
+        "jsx": "always"
+      }
+    ]
   }
 }
