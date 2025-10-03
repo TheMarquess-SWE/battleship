@@ -2,14 +2,9 @@ import Player from '../../models/Player/Player.js';
 
 export default class GameController {
   constructor(gameSetup) {
-    const {
-      gameboardSize,
-      numberOfShips,
-      mode,
-      difficulty,
-      playerOneName,
-      playerTwoName,
-    } = gameSetup;
+    const { gameboardSize, numberOfShips, playerOneName, playerTwoName } =
+      gameSetup;
+    const { difficulty, mode } = gameSetup.settings;
 
     this.salvoMode = difficulty === 'salvo';
     this.players = [
@@ -38,6 +33,11 @@ export default class GameController {
 
     this.getOponentPlayer().receiveAttacks(positionsToAttack);
     this.switchPlayerTurn();
+  }
+
+  placePlayersShipsRandomly() {
+    this.players[0].placeShipsRandomly();
+    this.players[1].placeShipsRandomly();
   }
 
   getWinner() {
