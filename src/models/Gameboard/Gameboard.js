@@ -15,15 +15,6 @@ export default class Gameboard {
     });
   }
 
-  getInfo() {
-    return {
-      rows: this.rows,
-      columns: this.columns,
-      ships: this.ships,
-      board: this.board,
-    };
-  }
-
   populateFleet() {
     const ships = new Array(this.numberOfShips).fill(null);
     return ships.map((ship, index) => {
@@ -154,7 +145,7 @@ export default class Gameboard {
     if (!this.isValidAttack(cellIndex)) return false;
 
     const cell = this.board[cellIndex];
-    const { status, shipIndex, shipSection, isOccupied } = cell;
+    const { shipIndex, shipSection, isOccupied } = cell;
 
     if (isOccupied) {
       const ship = this.ships[shipIndex];
@@ -184,7 +175,9 @@ export default class Gameboard {
 
   shipsAlive() {
     let counter = 0;
-    this.ships.forEach((ship) => (counter += ship.isSunk() ? 0 : 1));
+    this.ships.forEach((ship) => {
+      counter += ship.isSunk() ? 0 : 1;
+    });
     return counter;
   }
 
@@ -203,61 +196,5 @@ export default class Gameboard {
 
   allCellsStatus() {
     return this.board.map((cell) => cell.status);
-  }
-
-  printBoard() {
-    let index = 0;
-    for (let row = 0; row < this.rows; row += 1) {
-      let stringRowA = '';
-      let stringRowB = '';
-      let stringRowC = '';
-      for (let cols = 0; cols < this.columns; cols += 1) {
-        const { status, shipType, shipSection } = this.board[index];
-        stringRowA += ` s:${status}  t:${shipType ?? 'n'} |`;
-        if (row === 0) {
-          stringRowB += ` i:${index}  S:${shipSection ?? 'n'} |`;
-        } else {
-          stringRowB += ` i:${index} S:${shipSection ?? 'n'} |`;
-        }
-        stringRowC += '-----------';
-        index += 1;
-      }
-      console.log(stringRowA);
-      console.log(stringRowB);
-      console.log(stringRowC);
-    }
-  }
-
-  printBoardHidingShips() {
-    let index = 0;
-    for (let row = 0; row < this.rows; row += 1) {
-      let stringRow = '';
-      for (let col = 0; col < this.columns; col += 1) {
-        const cell = this.board[index];
-        stringRow += `${cell.status} `;
-        index += 1;
-      }
-      console.log(stringRow);
-    }
-  }
-
-  printBoardShipsOnly() {
-    let index = 0;
-    for (let row = 0; row < this.rows; row += 1) {
-      let stringRow = '';
-      for (let col = 0; col < this.columns; col += 1) {
-        const cell = this.board[index];
-        stringRow += `${cell.shipIndex ?? 'x'} `;
-        index += 1;
-      }
-      console.log(stringRow);
-    }
-  }
-
-  printShipsPositions() {
-    this.ships.forEach((ship) => {
-      console.log(ship.name);
-      console.log(ship.positions);
-    });
   }
 }
