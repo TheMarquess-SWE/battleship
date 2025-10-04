@@ -6,7 +6,7 @@ export default class Player {
     this.gameboard = new Gameboard(gameboardSize, numberOfShips);
     this.normalMode = !salvoMode;
     this.salvoMode = salvoMode;
-    this.attackPositions = [];
+    this.attacksQueue = [];
   }
 
   placeShips(positionsSet) {
@@ -16,7 +16,7 @@ export default class Player {
   }
 
   getRoundTargetsLeft() {
-    return this.getAttacksLeft() - this.attackPositions.length;
+    return this.getAttacksLeft() - this.attacksQueue.length;
   }
 
   placeShip(shipIndex, positions) {
@@ -51,5 +51,13 @@ export default class Player {
 
   gameboardStatus() {
     return this.gameboard.allCellsStatus();
+  }
+
+  enqueueAttack(position) {
+    this.attacksQueue.push(position);
+  }
+
+  clearAttacksQueue() {
+    this.attacksQueue = [];
   }
 }
