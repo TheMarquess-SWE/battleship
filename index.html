@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THIS IS... BATTLESHIP!</title>
+<script defer src="main.js"></script></head>
+
+<body>
+  <header>
+    <!-- TITLE -->
+    <div class="title-container">
+      <h1 class="before-title">THIS IS</h1>
+      <h1 class="title">BATTLESHIP</h1>
+    </div>
+    <!-- GAME SETUP -->
+    <div class="game-setup-container">
+      <form id="game-setup-form">
+        <!-- PLAYER NAMES -->
+        <fieldset class="player-names-fieldset-container">
+          <div class="player-name-input-container">
+            <h3 class="player-name-title">Player One:</h3>
+            <input type="text" id="player-one-name-input" placeholder="JACK SPARROW" />
+          </div>
+          <div class="player-name-input-container" id="player-two-name-input-container">
+            <h3 class="player-name-title">Player Two:</h3>
+            <input type="text" id="player-two-name-input" placeholder="BARBOSA" />
+          </div>
+        </fieldset>
+        <!-- GAME SETTINGS -->
+        <fieldset class="game-settings-fieldset-container" id="game-settings-fieldset">
+          <!-- DIFFICULTY -->
+          <div class="game-option-container">
+            <h3 class="game-option-title">Difficulty:</h3>
+            <div class="game-option-choice" id="game-difficulty-choice">
+              <div class="option-choice" id="normal-difficulty" data-type="difficulty" data-value="normal">
+                <p>Normal</p>
+              </div>
+              <div class="option-choice" id="salvo-difficulty" data-type="difficulty" data-value="salvo">
+                <p>Salvo</p>
+              </div>
+            </div>
+          </div>
+          <!-- MODE -->
+          <div class="game-option-container">
+            <h3 class="game-option-title">Mode: </h3>
+            <div class="game-option-choice" id="game-mode-choice">
+              <div class="option-choice" id="solo-mode" data-type="mode" data-value="solo">
+                <p>Solo</p>
+              </div>
+              <div class="option-choice" id="versus-mode" data-type="mode" data-value="versus">
+                <p>Versus</p>
+              </div>
+            </div>
+        </fieldset>
+        <!-- START GAME -->
+        <button id="start-game-btn" type="submit">Open Fire!</button>
+      </form>
+    </div>
+  </header>
+  <main>
+    <h2 id="game-status-header"></h2>
+    <h3 id="attacks-left-header"></h3>
+    <div class="players-gameboards-container">
+      <!-- PLAYER ONE GAMEBOARD -->
+      <div class="player-gameboard-container">
+        <div class="player-gameboard" id="current-player-gameboard"></div>
+        <h3 class="player-name-header" id="player-one-name-header"></h3>
+      </div>
+      <!-- PLAYER TWO GAMEBOARD -->
+      <div class="player-gameboard-container">
+        <div class="player-gameboard" id="oponent-player-gameboard"></div>
+        <h3 class="player-name-header" id="player-two-name-header"></h3>
+      </div>
+    </div>
+  </main>
+
+</body>
+
+</html>
