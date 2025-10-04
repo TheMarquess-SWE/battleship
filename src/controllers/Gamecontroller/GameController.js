@@ -40,6 +40,28 @@ export default class GameController {
     this.players[1].placeShipsRandomly();
   }
 
+  queueAttack(position) {
+    const currentPlayer = this.getCurrentPlayer();
+    const oponentPlayer = this.getOponentPlayer();
+
+    if (
+      !oponentPlayer.isValidAttack(position) ||
+      currentPlayer.attacksQueue.includes(position)
+    ) {
+      return false;
+    }
+
+    currentPlayer.enqueueAttack(position);
+
+    if (currentPlayer.attacksQueue.length === currentPlayer.getAttacksLeft()) {
+      this.attack(currentPlayer.attacksQueue);
+      currentPlayer.clearAttacksQueue();
+      return true;
+    }
+
+    return false;
+  }
+
   getWinner() {
     if (this.players[0].allShipsSunk() || this.players[1].allShipsSunk()) {
       return this.players[0].allShipsSunk() ? this.players[1] : this.players[0];

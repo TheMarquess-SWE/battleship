@@ -209,5 +209,30 @@ describe('GameController', () => {
         });
       });
     });
+
+    describe('queueAttack', () => {
+      it('should register one enqueued attack in currentPlayer.attacksQueue', () => {
+        const enqueuedAttack = 0;
+        gameController.queueAttack(enqueuedAttack);
+        expect(gameController.getCurrentPlayer().attacksQueue.length).toBe(1);
+        expect(gameController.getCurrentPlayer().attacksQueue[0]).toBe(
+          enqueuedAttack
+        );
+      });
+
+      it('should place the attacks when the queue length reaches the Player.getAttacksLeft for this round', () => {
+        const queueAttackPositions = [50, 51, 52, 53, 54];
+
+        queueAttackPositions.forEach((position) =>
+          gameController.queueAttack(position)
+        );
+
+        queueAttackPositions.forEach((position) => {
+          expect(
+            gameController.getCurrentPlayer().gameboard.board[position].status
+          ).toBe(1);
+        });
+      });
+    });
   });
 });
