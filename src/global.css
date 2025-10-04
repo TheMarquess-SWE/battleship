@@ -1,0 +1,73 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+.player-gameboard {
+  border: 0px solid navy;
+  width: 400px;
+  height: 400px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 100px;
+}
+
+.option-choice {
+  border: 1px solid red;
+  width: 400px;
+  height: 100px;
+  cursor: pointer;
+}
+
+.option-choice:hover {
+  background-color: powderblue;
+}
+
+.active-choice {
+  background-color: red;
+}
+
+.hidden {
+  display: none;
+}
+
+.gameboard-cell {
+  border: 1px solid orange;
+  background-color: green;
+  aspect-ratio: 1 / 1;
+}
+
+.cell-unexplored {
+  background-color: green;
+}
+
+.cell-missed-hit {
+  background-color: blue;
+}
+
+.cell-hit-alive {
+  background-color: yellow;
+}
+
+.cell-hit-sunk {
+  background-color: red;
+}
+
+.cell-target {
+  border: 5px solid blue;
+}
+
+.players-gameboards-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 200px;
+  margin-bottom: 200px;
+}
+
+#oponent-player-gameboard .gameboard-cell:hover {
+  border: 5px solid blue;
+}
