@@ -27,7 +27,6 @@ export default class AppController {
       playerOneName.length === 0 ? 'JACK' : playerOneName;
     this.gameSetup.playerTwoName =
       playerTwoName.length === 0 ? 'BARBOSA' : playerTwoName;
-    console.log(this.gameSetup);
 
     this.gameController = new GameController(this.gameSetup);
     // this.gameController.placePlayersShipsRandomly();
