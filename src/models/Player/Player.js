@@ -15,6 +15,10 @@ export default class Player {
     });
   }
 
+  sinkShip(shipIndex) {
+    this.gameboard.sinkShip(shipIndex);
+  }
+
   getRoundTargetsLeft() {
     return this.getAttacksLeft() - this.attacksQueue.length;
   }
