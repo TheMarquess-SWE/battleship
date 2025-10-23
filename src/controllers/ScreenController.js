@@ -91,8 +91,8 @@ export default class ScreenController {
     this.oponentPlayerCellEls =
       this.oponentPlayerBoardEl.querySelectorAll('.gameboard-cell');
 
-    this.updateCurrentPlayerName(gameSetup.playerOneName);
-    this.updateOponentPlayerName(gameSetup.playerTwoName);
+    this.updateCurrentPlayerName(gameSetup.players[0].name);
+    this.updateOponentPlayerName(gameSetup.players[1].name);
   }
 
   fillPlayersBoards(gameboardSize) {

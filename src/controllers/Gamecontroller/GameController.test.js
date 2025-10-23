@@ -1,4 +1,4 @@
-import GameController from './GameController';
+import GameController from './GameController.js';
 
 describe('GameController', () => {
   it('should exist', () => {
@@ -13,8 +13,7 @@ describe('GameController', () => {
         mode: 'versus',
         difficulty: 'salvo',
       },
-      playerOneName: 'PLAYER ONE',
-      playerTwoName: 'PLAYER TWO',
+      players: [{ name: 'PLAYER ONE' }, { name: 'PLAYER TWO' }],
     });
 
     it('should assing the player names correctly', () => {
@@ -39,8 +38,7 @@ describe('GameController', () => {
           mode: 'versus',
           difficulty: 'normal',
         },
-        playerOneName: 'JUDO MASTER',
-        playerTwoName: 'ALBEDO',
+        players: [{ name: 'JUDO MASTER' }, { name: 'ALBEDO' }],
       });
 
       const testShipPositions = [
@@ -64,8 +62,7 @@ describe('GameController', () => {
             mode: 'versus',
             difficulty: 'salvo',
           },
-          playerOneName: 'JUDO MASTER',
-          playerTwoName: 'ALBEDO',
+          players: [{ name: 'JUDO MASTER' }, { name: 'ALBEDO' }],
         });
         expect(gameController.getCurrentPlayer()).toBe(
           gameController.players[0]
@@ -117,8 +114,7 @@ describe('GameController', () => {
           mode: 'versus',
           difficulty: 'salvo',
         },
-        playerOneName: 'JUDO MASTER',
-        playerTwoName: 'ALBEDO',
+        players: [{ name: 'JUDO MASTER' }, { name: 'ALBEDO' }],
       });
 
       const testShipPositions = [

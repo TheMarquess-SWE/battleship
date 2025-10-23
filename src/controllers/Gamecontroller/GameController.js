@@ -2,15 +2,17 @@ import Player from '../../models/Player/Player.js';
 
 export default class GameController {
   constructor(gameSetup) {
-    const { gameboardSize, numberOfShips, playerOneName, playerTwoName } =
-      gameSetup;
-    const { difficulty, mode } = gameSetup.settings;
+    const { gameboardSize, numberOfShips, players } = gameSetup;
+    const { difficulty } = gameSetup.settings;
 
     this.salvoMode = difficulty === 'salvo';
     this.players = [
-      new Player(playerOneName, gameboardSize, numberOfShips, this.salvoMode),
-      new Player(playerTwoName, gameboardSize, numberOfShips, this.salvoMode),
+      new Player(players[0].name, gameboardSize, numberOfShips, this.salvoMode),
+      new Player(players[1].name, gameboardSize, numberOfShips, this.salvoMode),
     ];
+
+    this.players[0].bindAutoPilot(this.players[1].gameboard);
+    this.players[1].bindAutoPilot(this.players[0].gameboard);
 
     this.currentPlayerIndex = 0;
   }

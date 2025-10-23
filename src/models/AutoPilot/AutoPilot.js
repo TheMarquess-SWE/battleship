@@ -1,370 +1,309 @@
 export default class AutoPilot {
+  static DIRECTIONS = [
+    { dir: 'up', val: -10 },
+    { dir: 'right', val: 1 },
+    { dir: 'down', val: 10 },
+    { dir: 'left', val: -1 },
+  ];
+  static SHIP_LENGTHS = [5, 4, 3, 3, 2];
+
   constructor(player, oponentGameboard) {
     this.player = player;
     this.targetGameboard = oponentGameboard;
     this.targetBoard = this.targetGameboard.board;
-    this.totalShips = this.targetGameboard.ships.length;
-    this.shipLengths = [5, 4, 3, 3, 2];
-    this.targetShips = new Array(this.totalShips)
-      .fill(null)
-      .map((ship, index) => ({
-        index,
-        positions: [],
-        length: this.shipLengths[index % this.totalShips],
-        isSunk: false,
-      }));
-    this.directions = [
-      { dir: 'up', val: -10 },
-      { dir: 'right', val: 1 },
-      { dir: 'down', val: 10 },
-      { dir: 'left', val: -1 },
-    ];
+    const totalShips = this.targetGameboard.ships.length;
+    this.targetShips = new Array(totalShips).fill(null).map((_, index) => ({
+      index,
+      positions: [],
+      length: AutoPilot.SHIP_LENGTHS[index % AutoPilot.SHIP_LENGTHS.length],
+      isSunk: false,
+    }));
+    this.looseHits = [];
+  }
+
+  findCurrentHits() {
+    const hitCells = [];
+    const sunkCells = [];
+    for (const cell of this.targetBoard) {
+      if (cell.status === 2) {
+        hitCells.push(cell.index);
+      }
+      if (cell.status === 3) {
+        sunkCells.push(cell.index);
+      }
+    }
+    return { hitCells, sunkCells };
   }
 
   getAttackPositions() {
-    const hitCells = this.findHitCells();
-    let attackPositions = [];
-
-    if (!hitCells) {
-      return this.getRandomAttackPositions();
+    const { hitCells, sunkCells } = this.findCurrentHits();
+    if (sunkCells.length > 0) {
+      this.registerSunkShips(sunkCells);
     }
 
-    attackPositions = this.explorePositions(hitCells);
-    return attackPositions;
+    const attacksCount = this.player.getRoundTargetsLeft();
+    const uniqueAttacks = new Set();
+    let positions;
+
+    if (hitCells.length > 0) {
+      this.assignHitsToShips(hitCells);
+      positions = this.explorePositions(attacksCount, uniqueAttacks);
+    } else {
+      positions = this.getRandomAttackPositions(attacksCount, uniqueAttacks);
+    }
+
+    return positions;
   }
 
-  findHitCells() {
-    const cellsIndex = [];
-    const sunkShipsIndex = [];
+  registerSunkShips(sunkPositions) {
+    let remainingPositions = [...sunkPositions];
+    this.targetShips
+      .filter((ship) => !ship.isSunk)
+      .forEach((ship) => {
+        const foundPositions = this.findContiguousPositions(
+          ship.length,
+          remainingPositions
+        );
 
-    for (let i = 0; i < this.targetBoard.length; i += 1) {
-      const cell = this.targetBoard[i];
-
-      if (cell.status === 2) {
-        cellsIndex.push(cell.index);
-      }
-
-      if (cell.status === 3) {
-        sunkShipsIndex.push(cell.index);
-      }
-    }
-    if (sunkShipsIndex.length !== 0) {
-      this.registerSunkShips(sunkShipsIndex);
-    }
-
-    if (cellsIndex.length === 0) {
-      return false;
-    }
-
-    return cellsIndex;
-  }
-
-  registerSunkShips(positions) {
-    const remainingPositions = positions;
-
-    this.targetShips.forEach((ship) => {
-      const foundPositions = this.findPositionsForShipLength(
-        ship.length,
-        remainingPositions
-      );
-
-      foundPositions.forEach((p) => {
-        const i = remainingPositions.findIndex((el) => p === el);
-        remainingPositions.splice(i, 1);
+        if (foundPositions.length === ship.length) {
+          ship.positions = foundPositions;
+          ship.isSunk = true;
+          remainingPositions = remainingPositions.filter(
+            (p) => !foundPositions.includes(p)
+          );
+        }
       });
-
-      if (foundPositions.length > 0) {
-        ship.positions = foundPositions;
-        ship.isSunk = true;
-      }
-    });
   }
 
-  findPositionsForShipLength(length, positions) {
-    let shipPos = [];
+  findContiguousPositions(length, positions) {
+    const sortedPositions = [...positions].sort((a, b) => a - b);
+    const rowsCols = this.targetGameboard.rows;
 
-    for (let pos = 0; pos < positions.length; pos += 1) {
-      const head = positions[pos];
-      shipPos = [head];
+    for (const head of sortedPositions) {
+      for (const { val } of AutoPilot.DIRECTIONS.filter(
+        (d) => Math.abs(d.val) > 0
+      )) {
+        const potentialShip = [head];
 
-      for (let dir = 0; dir < this.directions.length; dir += 1) {
-        for (let i = 1; i <= length; i += 1) {
-          const next = head + i * this.directions[dir].val;
-          if (positions.includes(next)) shipPos.push(next);
-          if (shipPos.length === length) return shipPos;
+        for (let i = 1; i < length; i += 1) {
+          const next = head + i * val;
+
+          if (sortedPositions.includes(next)) {
+            const isHorizontal = Math.abs(val) === 1;
+
+            if (
+              isHorizontal &&
+              Math.floor(next / rowsCols) !== Math.floor(head / rowsCols)
+            ) {
+              break;
+            }
+            potentialShip.push(next);
+          } else {
+            break;
+          }
+        }
+
+        if (potentialShip.length === length) {
+          return potentialShip.sort((a, b) => a - b);
         }
       }
     }
     return [];
   }
 
-  getPositionsLeft(ship) {
-    return ship.length - ship.positions.length;
-  }
-
-  explorePositions(hitCells) {
-    this.assignHitsToShips(hitCells);
-
-    if (hitCells.length === 1) {
-      return this.getAttacksAroundPosition(
-        hitCells[0],
-        this.player.getRoundTargetsLeft()
-      );
-    }
-
-    const shipsAlive = [];
-    const positions = [];
+  assignHitsToShips(hitCells) {
+    let unassignedHits = [...hitCells];
+    this.looseHits = [];
 
     this.targetShips.forEach((ship) => {
-      if (!ship.isSunk) shipsAlive.push(ship);
+      if (!ship.isSunk) ship.positions = [];
     });
 
-    let numberOfAttacks = this.player.getRoundTargetsLeft();
+    const shipsByLength = this.targetShips
+      .filter((ship) => !ship.isSunk)
+      .sort((a, b) => b.length - a.length);
 
-    while (numberOfAttacks > 0) {
-      const shipCandidate = this.findShipCandidate(shipsAlive);
+    shipsByLength.forEach((ship) => {
+      for (let len = ship.length; len >= 1; len -= 1) {
+        const foundPositions = this.findContiguousPositions(
+          len,
+          unassignedHits
+        );
 
-      if (!shipCandidate) {
-        for (let i = 0; i < numberOfAttacks; i += 1) {
-          positions.push(this.getRandomAttackPosition());
+        if (foundPositions.length === len) {
+          ship.positions = foundPositions;
+          unassignedHits = unassignedHits.filter(
+            (p) => !foundPositions.includes(p)
+          );
+          break;
         }
       }
+    });
 
-      if (shipCandidate) {
-        const index = shipsAlive.findIndex(
-          (ship) => ship.index === shipCandidate.index
-        );
-        shipsAlive.splice(index, 1);
-
-        numberOfAttacks =
-          numberOfAttacks >= this.getPositionsLeft(shipCandidate)
-            ? this.getPositionsLeft(shipCandidate)
-            : numberOfAttacks;
-
-        positions.push(
-          ...this.getAttackPositionsForCandidate(shipCandidate, numberOfAttacks)
-        );
-      }
-
-      numberOfAttacks = this.player.getRoundTargetsLeft() - positions.length;
+    if (unassignedHits.length > 0) {
+      this.looseHits.push(...unassignedHits);
     }
-
-    return positions;
   }
 
-  findShipCandidate(shipsAlive) {
-    let shipCandidate = shipsAlive[0];
+  explorePositions(numberOfAttacks, uniqueAttacks) {
+    const attacks = [];
+    const shipsAlive = this.targetShips.filter((ship) => !ship.isSunk);
 
-    if (shipsAlive.length > 1) {
-      for (let i = 1; i < shipsAlive.length; i += 1) {
-        const comparingShip = shipsAlive[i];
-        if (
-          this.getPositionsLeft(comparingShip) <
-            this.getPositionsLeft(shipCandidate) &&
-          comparingShip.positions.length > 0
-        )
-          shipCandidate = comparingShip;
-      }
+    const shipCandidates = shipsAlive
+      .filter((ship) => ship.positions.length > 0)
+      .sort(
+        (a, b) => b.positions.length - a.positions.length || a.length - b.length
+      );
+
+    for (const shipCandidate of shipCandidates) {
+      if (numberOfAttacks <= 0) break;
+
+      const positionsToTake = Math.min(
+        numberOfAttacks,
+        shipCandidate.length - shipCandidate.positions.length
+      );
+
+      const targetAttacks = this.getTargetAttacks(
+        shipCandidate,
+        positionsToTake,
+        uniqueAttacks
+      );
+
+      attacks.push(...targetAttacks);
+      targetAttacks.forEach((pos) => uniqueAttacks.add(pos));
+      numberOfAttacks -= targetAttacks.length;
     }
 
-    if (shipCandidate.positions.length === 0) return undefined;
+    let looseHitsIndex = 0;
 
-    return shipCandidate;
+    while (numberOfAttacks > 0 && looseHitsIndex < this.looseHits.length) {
+      const numOfAttacks = Math.min(numberOfAttacks, 4);
+      const looseHitPosition = this.looseHits[looseHitsIndex];
+
+      if (this.targetGameboard.board[looseHitPosition].status === 2) {
+        const targetAttacks = this.getAttacksAroundPosition(
+          looseHitPosition,
+          numOfAttacks,
+          uniqueAttacks
+        );
+
+        attacks.push(...targetAttacks);
+        targetAttacks.forEach((pos) => uniqueAttacks.add(pos));
+        numberOfAttacks -= targetAttacks.length;
+      }
+
+      looseHitsIndex += 1;
+    }
+
+    if (numberOfAttacks > 0) {
+      const randomAttacks = this.getRandomAttackPositions(
+        numberOfAttacks,
+        uniqueAttacks
+      );
+      attacks.push(...randomAttacks);
+    }
+
+    return attacks;
   }
 
-  getAttackPositionsForCandidate(shipCandidate, numberOfAttacks) {
-    const positions = [];
-    if (shipCandidate.positions.length > 1) {
-      const rowsCols = this.targetGameboard.rows;
-
-      const sameRow = shipCandidate.positions.every(
-        (position) =>
-          Math.floor(position / rowsCols) ===
-          Math.floor(shipCandidate.positions[0] / rowsCols)
-      );
-
-      const sameColumn = shipCandidate.positions.every(
-        (position) =>
-          position % rowsCols === shipCandidate.positions[0] % rowsCols
-      );
-
-      let dirs;
-      let isRow = false;
-
-      if (sameRow) {
-        dirs = [-1, 1];
-        isRow = true;
-      }
-      if (sameColumn) {
-        dirs = [-10, 10];
-      }
-      const head = shipCandidate.positions[0];
-      const tail = shipCandidate.positions[shipCandidate.positions.length - 1];
-      const dirOne = this.targetGameboard.isValidAttack(head + dirs[0]);
-      const dirTwo = this.targetGameboard.isValidAttack(tail + dirs[1]);
-      const dirOneValue = dirs[0];
-      const dirTwoValue = dirs[1];
-
-      if (dirOne && !dirTwo) {
-        const attacks = this.getAttacksFromDirection(
-          numberOfAttacks,
-          head,
-          dirOneValue,
-          isRow
-        );
-        positions.push(...attacks);
-      }
-
-      if (!dirOne && dirTwo) {
-        const attacks = this.getAttacksFromDirection(
-          numberOfAttacks,
-          tail,
-          dirTwoValue,
-          isRow
-        );
-        positions.push(...attacks);
-      }
-
-      if (dirOne && dirTwo) {
-        const numberOfAttacksDirOne = Math.floor(numberOfAttacks / 2);
-        const numberOfAttacksDirTwo = numberOfAttacks - numberOfAttacksDirOne;
-
-        const attacksDirOne = this.getAttacksFromDirection(
-          numberOfAttacksDirOne,
-          head,
-          dirOneValue,
-          isRow
-        );
-        const attacksDirTwo = this.getAttacksFromDirection(
-          numberOfAttacksDirTwo,
-          tail,
-          dirTwoValue,
-          isRow
-        );
-
-        positions.push(...attacksDirOne);
-        positions.push(...attacksDirTwo);
-      }
-    }
-
+  getTargetAttacks(shipCandidate, numberOfAttacks, uniqueAttacks) {
     if (shipCandidate.positions.length === 1) {
-      positions.push(
-        ...this.getAttacksAroundPosition(
-          shipCandidate.positions[0],
-          numberOfAttacks
-        )
+      return this.getAttacksAroundPosition(
+        shipCandidate.positions[0],
+        numberOfAttacks,
+        uniqueAttacks
       );
     }
+    const positions = shipCandidate.positions.sort((a, b) => a - b);
+    const head = positions[0];
+    const tail = positions[positions.length - 1];
+    const rowsCols = this.targetGameboard.rows;
+    const isHorizontal =
+      Math.floor(head / rowsCols) === Math.floor(tail / rowsCols);
+    const dirVals = isHorizontal ? [-1, 1] : [-10, 10];
 
-    return positions;
-  }
+    const attacks = [];
+    for (let i = 0; i < 2; i += 1) {
+      const startPos = i === 0 ? head : tail;
+      const dirVal = dirVals[i];
+      const attacksLeft = numberOfAttacks - attacks.length;
 
-  getAttacksFromDirection(numberOfAttacks, start, dir, isRow) {
-    let head = start;
-    let positions = [];
-    let min;
-    let max;
-    const { rows, columns } = this.targetGameboard;
-    const row = Math.floor(start / rows);
-    const col = start - row * columns;
-
-    if (!isRow) {
-      min = 0 + col;
-      max = (rows - 1) * columns + col;
-    }
-
-    if (isRow) {
-      min = row * columns;
-      max = min + columns - 1;
-    }
-
-    for (let i = 0; i < numberOfAttacks; i += 1) {
-      const next = head + dir;
-      if (
-        !this.targetGameboard.isValidAttack(next) ||
-        next < min ||
-        next > max ||
-        this.player.attacksQueue.includes(next)
-      )
-        break;
-      head = next;
-      positions.push(next);
-    }
-
-    return positions;
-  }
-
-  assignHitsToShips(hitCells) {
-    const shipsAlive = [];
-    const unassignedHits = [...hitCells];
-    this.targetShips.forEach((ship) => {
-      if (!ship.isSunk) shipsAlive.push(ship);
-    });
-
-    shipsAlive.forEach(({ length, index }) => {
-      let positions = [];
-      let shipLength = length;
-      while (positions.length === 0 && unassignedHits.length !== 0) {
-        positions = this.findPositionsForShipLength(shipLength, unassignedHits);
-        shipLength -= 1;
+      if (attacksLeft > 0) {
+        const currentAttacks = this.getAttacksInDirection(
+          startPos,
+          dirVal,
+          Math.ceil(attacksLeft / (2 - i)),
+          uniqueAttacks
+        );
+        attacks.push(...currentAttacks);
+        currentAttacks.forEach((pos) => uniqueAttacks.add(pos));
       }
-      if (positions.length === length) positions = [];
-
-      this.targetShips[index].positions = positions;
-
-      positions.forEach((p) => {
-        const i = unassignedHits.findIndex((el) => el === p);
-        unassignedHits.splice(i, 1);
-      });
-    });
+    }
+    return attacks;
   }
 
-  getAttacksAroundPosition(position, numberOfAttacks) {
+  getAttacksInDirection(start, dir, maxAttacks, uniqueAttacks) {
     const positions = [];
-    const maxAttacks = numberOfAttacks;
-    const head = position;
-    let loopCounter = 1;
-    let dirCounter = 0;
+    let currentPos = start;
 
-    while (positions.length < maxAttacks) {
-      if (dirCounter > 3) {
-        dirCounter = 0;
-        loopCounter += 1;
-      }
+    for (let i = 0; i < maxAttacks; i += 1) {
+      const next = currentPos + dir;
 
-      const next = head + this.directions[dirCounter].val * loopCounter;
+      if (!this.isValidHuntPosition(next) || uniqueAttacks.has(next)) break;
 
-      if (
-        this.targetGameboard.isValidAttack(next) &&
-        !this.player.attacksQueue.includes(next)
-      )
-        positions.push(next);
-
-      dirCounter += 1;
+      positions.push(next);
+      currentPos = next;
     }
 
     return positions;
   }
 
-  getRandomAttackPositions() {
-    const attackPositions = [];
-    for (let i = 0; i < this.player.getRoundTargetsLeft(); i += 1) {
-      attackPositions.push(this.getRandomAttackPosition());
+  getAttacksAroundPosition(position, numberOfAttacks, uniqueAttacks) {
+    const attacks = [];
+
+    for (const { val } of AutoPilot.DIRECTIONS) {
+      const next = position + val;
+
+      if (
+        attacks.length < numberOfAttacks &&
+        this.isValidHuntPosition(next) &&
+        !uniqueAttacks.has(next)
+      ) {
+        attacks.push(next);
+        uniqueAttacks.add(next);
+      }
     }
 
+    return attacks;
+  }
+
+  getRandomAttackPositions(count, uniqueAttacks) {
+    const attackPositions = [];
+    for (let i = 0; i < count; i += 1) {
+      attackPositions.push(this.getRandomAttackPosition(uniqueAttacks));
+    }
     return attackPositions;
   }
 
-  getRandomAttackPosition() {
+  getRandomAttackPosition(uniqueAttacks) {
     let position = -1;
+    const boardSize = this.targetGameboard.size || 100;
 
-    while (
-      !this.targetGameboard.isValidAttack(position) &&
-      !this.player.attacksQueue.includes(position)
-    ) {
-      position = Math.floor(Math.random() * this.targetGameboard.size);
-    }
+    do {
+      position = Math.floor(Math.random() * boardSize);
+    } while (
+      !this.isValidHuntPosition(position) ||
+      uniqueAttacks.has(position)
+    );
 
+    uniqueAttacks.add(position);
     return position;
+  }
+
+  isValidHuntPosition(position) {
+    return (
+      this.targetGameboard.isValidAttack(position) &&
+      !this.player.attacksQueue.includes(position)
+    );
   }
 }

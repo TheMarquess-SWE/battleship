@@ -1,4 +1,5 @@
 import Gameboard from '../Gameboard/Gameboard.js';
+import AutoPilot from '../AutoPilot/AutoPilot.js';
 
 export default class Player {
   constructor(name, gameboardSize = 10, numberOfShips = 5, salvoMode = false) {
@@ -7,12 +8,18 @@ export default class Player {
     this.normalMode = !salvoMode;
     this.salvoMode = salvoMode;
     this.attacksQueue = [];
+    this.isAutoPilotOn = true;
+    this.autoPilot = undefined;
   }
 
   placeShips(positionsSet) {
     positionsSet.forEach((position, shipIndex) => {
       this.placeShip(shipIndex, position);
     });
+  }
+
+  bindAutoPilot(oponentGameboard) {
+    this.autoPilot = new AutoPilot(this, oponentGameboard);
   }
 
   sinkShip(shipIndex) {

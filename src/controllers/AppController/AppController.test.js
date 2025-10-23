@@ -24,8 +24,10 @@ describe('AppController', () => {
       mode: 'versus',
       difficulty: 'normal',
     },
-    playerOneName: 'Jack Sparrow',
-    playerTwoName: 'sAIlor moon',
+    players: [
+      { name: 'Jack Sparrow', isAutoPilotOn: false },
+      { name: 'sAIlor moon', isAutoPilotOn: false },
+    ],
   };
 
   it('should initialize with correct gameSetup', () => {
@@ -49,8 +51,8 @@ describe('AppController', () => {
   describe('playGame', () => {
     it('should set the player names correctly', () => {
       app.playGame('A', 'B');
-      expect(app.gameSetup.playerOneName).toBe('A');
-      expect(app.gameSetup.playerTwoName).toBe('B');
+      expect(app.gameSetup.players[0].name).toBe('A');
+      expect(app.gameSetup.players[1].name).toBe('B');
     });
   });
 });
